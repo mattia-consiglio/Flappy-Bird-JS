@@ -24,21 +24,26 @@
 				<div id="score">0</div>
 				<img id="bird" src="assets/sprites/yellowbird-midflap.png">
 				<div id="base"></div>
+				<img src="assets/sprites/gameover.png" alt="Game Over" id="gameOver">
 			</div>
 		</section>
 		<section>
 
 			<div id="debugInfo">
+				<p>Is running: <span id="IsRunning"></span></p>
 				<p>Bird top: <span id="birdTop"></span></p>
-				<p>Current gravity factor: <span id="gravityFactor"></span></p>
+				<p>Bird rotation <span id="birdRotation"></span></p>
+				<p>Current gravity: <span id="gravityFactor"></span></p>
 				<p>Bird is collided?: <span id="birdIsCollided"></span></p>
+				<p>Frames: <span id="frames"></span></p>
 			</div>
 		</section>
 		<div id="instructions">
 			<h2>Instructions</h2>
 			<p>Click, tap or press space to <strong>START</strong> o <strong>RETRY</strong></p>
 			<p>You receive a point every time you pass through the pipes. Score as many points as you can!</p>
-			<p>Over time the gravity will increase, making more difficut pass pass through the pipes.</p>
+			<p>Over time the gravity attraction to the ground will increase, making more difficut pass pass through the pipes.
+			</p>
 		</div>
 	</main>
 	<script src="script.js"></script>

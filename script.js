@@ -1,15 +1,20 @@
 const game = document.getElementById('game')
 const base = document.getElementById('base')
 const bird = document.getElementById('bird')
-const birdMinY = 80
+const birdStartY = 80
 const birdMaxY = 377
-const minGravity = 1.5
-const maxGravity = 2.5
+const minGravity = -30
+const maxGravity = 10
 const debugEnable = true
 
-const events = ['click', 'keydown']
+const events = ['click', 'keydown', 'keyup', 'touchstart']
 let isRunning = false
 let bgPosition = 0
+let intervalID = null
+let gravity = 0
+let frames = 0
+let keyPressed = false
+let birdColor = 'yellow'
 
 const debug = (id, val) => {
 	if (!debugEnable) {
@@ -20,14 +25,17 @@ const debug = (id, val) => {
 	document.getElementById(id).textContent = val
 }
 
-const getGravityFactor = () => {
-	const gravityFactor = (getBirdPosition() / birdMaxY) * (maxGravity - minGravity) + minGravity
-	// if (gravityFactor < gravity) {
-	// 	document.getElementById('gravityFactor').textContent = gravityFactor
-	// 	return gravity
-	// }
-	debug('gravityFactor', gravityFactor)
-	return gravityFactor
+const setGravityRange = () => {
+	if (gravity < minGravity) {
+		gravity = minGravity
+	}
+	if (gravity > maxGravity) {
+		gravity = maxGravity
+	}
+	if (getBirdPosition() === 0) {
+		gravity = 0.1
+	}
+	debug('gravityFactor', gravity)
 }
 
 const getBirdPosition = () => {
@@ -36,67 +44,105 @@ const getBirdPosition = () => {
 	return top
 }
 const setBirdPosition = top => {
+	if (top < 0) {
+		top = 0
+	} else if (top > birdMaxY) {
+		top = birdMaxY
+	}
 	bird.style.top = top + 'px'
 }
 
 const birdIsCollided = () => {
-	const birdIsCollided = getBirdPosition() === birdMaxY
+	const birdIsCollided = getBirdPosition() >= birdMaxY
 	debug('birdIsCollided', birdIsCollided)
 	return birdIsCollided
 }
 
 const flap = () => {
-	const newBirdTop = getBirdPosition() - 37 * (getGravityFactor() / 1.5)
-	if (newBirdTop > 0) {
-		setBirdPosition(newBirdTop)
+	gravity -= 3
+	setGravityRange()
+}
+
+const startGame = () => {
+	document.getElementById('gameOver').style.display = 'none'
+	bird.src = `assets/sprites/${birdColor}bird-midflap.png`
+	isRunning = true
+	debug('IsRunning', isRunning)
+	game.style.backgroundPositionX = '0px'
+	base.style.backgroundPositionX = '0px'
+	setBirdPosition(birdStartY)
+	gravity = 0
+	frames = 0
+	intervalID = setInterval(main, 25)
+}
+const stopGame = () => {
+	isRunning = false
+	debug('IsRunning', isRunning)
+	clearInterval(intervalID)
+	document.getElementById('gameOver').style.display = 'block'
+}
+
+const main = () => {
+	if (!birdIsCollided()) {
+		// moving bg
+		game.style.backgroundPositionX = parseFloat(game.style.backgroundPositionX) - 4.64 + 'px'
+		// moving base
+		base.style.backgroundPositionX = parseFloat(base.style.backgroundPositionX) - 3.57 + 'px'
+
+		//incremet gravity
+		gravity += 0.11 + frames / 10000
+		setGravityRange()
+		debug('gravityFactor', gravity)
+
+		// rotating the bird
+		const rotation = gravity * 5
+		bird.style.transform = 'rotate(' + rotation + 'deg)'
+		debug('birdRotation', rotation)
+
+		//changhing image scr based on the bird rotation
+		if (rotation <= -3) {
+			bird.src = `assets/sprites/${birdColor}bird-upflap.png`
+		} else if (rotation > -3 && rotation <= 2) {
+			bird.src = `assets/sprites/${birdColor}bird-midflap.png`
+		} else {
+			bird.src = `assets/sprites/${birdColor}bird-downflap.png`
+		}
+
+		setBirdPosition(getBirdPosition() + gravity)
+		frames++
+		debug('frames', frames)
 	} else {
-		setBirdPosition(0)
+		stopGame()
 	}
 }
 
 const playGame = () => {
 	if (!isRunning) {
-		isRunning = !isRunning
+		startGame()
 	}
-	if (isRunning) {
-		if (!birdIsCollided()) {
-			flap()
-		} else {
-			isRunning = !isRunning
-			setBirdPosition(birdMinY)
-			game.style.backgroundPositionX = '0px'
-			base.style.backgroundPositionX = '0px'
-		}
-	}
+	flap()
 }
-const intervalID = setInterval(() => {
-	if (isRunning) {
-		game.style.backgroundPositionX =
-			game.style.backgroundPositionX !== ''
-				? parseFloat(game.style.backgroundPositionX) - 4.64 + 'px'
-				: '0px'
-		base.style.backgroundPositionX =
-			base.style.backgroundPositionX !== ''
-				? parseFloat(base.style.backgroundPositionX) - 3.57 + 'px'
-				: '0px'
-		if (bird.style.top !== '') {
-			const newBirdTop = getBirdPosition() + (2 * getGravityFactor()) / 3
-			if (newBirdTop <= birdMaxY) {
-				birdTop = newBirdTop
-			} else {
-				birdTop = birdMaxY
-			}
-			setBirdPosition(birdTop)
-		} else {
-			setBirdPosition(birdMinY)
-		}
-	}
-}, 25)
 
 events.forEach(evnt => {
 	window.addEventListener(evnt, e => {
-		if ((e.type === 'keydown' && e.code === 'Space') || e.type === 'click') {
+		if (e.type === 'click' || e.type === 'touchstart') {
 			playGame()
+		}
+		if (e.type === 'keydown' && e.code === 'Space') {
+			if (!keyPressed) {
+				keyPressed = true
+				playGame()
+			}
+		}
+		if (e.type === 'keyup' && e.code === 'Space') {
+			keyPressed = false
 		}
 	})
 })
+
+debug('gravityFactor', gravity)
+debug('IsRunning', isRunning)
+debug('birdIsCollided', birdIsCollided())
+debug('birdTop', birdStartY)
+debug('frames', frames)
+debug('birdRotation', 0)
