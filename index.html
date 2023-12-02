@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Flappy bird</title>
+	<link rel="stylesheet" href="assets/css/style.min.css">
+</head>
+
+<body>
+	<header>
+		<h1>Flappy Bird</h1>
+		<h2>By <a href="https://github.com/mattia-consiglio" target="_blank" rel="noopener noreferrer">Mattia Consiglio</a>
+		</h2>
+
+	</header>
+	<main>
+		<section>
+
+		</section>
+		<section>
+			<div id="game">
+				<div id="score">0</div>
+				<img id="bird" src="assets/sprites/yellowbird-midflap.png">
+				<div id="base"></div>
+			</div>
+		</section>
+		<section>
+
+			<div id="debugInfo">
+				<p>Bird top: <span id="birdTop"></span></p>
+				<p>Current gravity factor: <span id="gravityFactor"></span></p>
+				<p>Bird is collided?: <span id="birdIsCollided"></span></p>
+			</div>
+		</section>
+		<div id="instructions">
+			<h2>Instructions</h2>
+			<p>Click, tap or press space to <strong>START</strong> o <strong>RETRY</strong></p>
+			<p>You receive a point every time you pass through the pipes. Score as many points as you can!</p>
+			<p>Over time the gravity will increase, making more difficut pass pass through the pipes.</p>
+		</div>
+	</main>
+	<script src="script.js"></script>
+</body>
+
+</html>
