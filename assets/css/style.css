@@ -14,6 +14,11 @@
   src: url("../fonts/flappy-bird-font.woff") format("woff");
   src: url("../fonts/flappy-bird-font.ttf") format("truetype");
 }
+@font-face {
+  font-family: "Pixels";
+  src: url("../fonts/Pixels.woff") format("woff");
+  src: url("../fonts/Pixels.ttf") format("truetype");
+}
 body {
   background-color: #292929;
   color: #ececec;
@@ -27,14 +32,32 @@ body p {
 }
 
 header,
-#instructions {
+#instructions,
+.options {
   text-align: center;
 }
 
-#instructions h2 {
-  font-size: 1.5rem;
+h1,
+h2,
+h3 {
+  text-transform: uppercase;
+  font-family: "Pixels", "Courier New", Courier, monospace;
+}
+
+h1 {
+  font-size: 4.5rem;
+}
+
+h2 {
+  font-size: 3.5rem;
   margin-bottom: 0.5rem;
 }
+
+h3 {
+  font-size: 2.6rem;
+  margin-bottom: 0.3rem;
+}
+
 #instructions p:first-of-type {
   font-size: 1.3rem;
   margin-bottom: 15px;
@@ -62,12 +85,21 @@ header,
   background-image: url(../sprites/base.png);
   background-repeat: repeat-x;
   background-position-y: bottom;
+  z-index: 100;
 }
 #game #score {
+  position: relative;
   font-family: "FlappyNumbers", "Courier New", Courier, monospace;
   font-size: 35px;
   text-align: center;
-  margin-top: 20px;
+  z-index: 90;
+  background: #2f787e;
+  display: block;
+  margin: 20px auto;
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  padding: 5px 2px 5px 5px;
 }
 #game #gameOver {
   position: absolute;
@@ -75,10 +107,40 @@ header,
   left: 144px;
   display: none;
 }
+#game #pipes {
+  z-index: 80;
+}
+#game #pipes .pipe {
+  position: absolute;
+  z-index: 80;
+}
+#game #pipes .pipe.pipeTop {
+  -webkit-transform: rotateX(180deg);
+          transform: rotateX(180deg);
+}
 
 #debugInfo {
   border: 1px solid #ececec;
   margin: 15px;
   padding: 15px;
   background-color: #414141;
+}
+
+.options #birdColor label {
+  display: inline-block;
+  padding: 5px;
+  border: 3px solid;
+  cursor: pointer;
+}
+.options #birdColor label:hover, .options #birdColor label:focus {
+  background-color: #2f787e;
+}
+.options #birdColor input {
+  display: none;
+}
+.options #birdColor input:checked + label {
+  background-color: #4dc1cb;
+}
+.options #birdColor input:checked + label:hover, .options #birdColor input:checked + label:focus {
+  background-color: #2f787e;
 }/*# sourceMappingURL=style.css.map */

@@ -10,6 +10,12 @@
 	src: url('../fonts/flappy-bird-font.ttf') format('truetype');
 }
 
+@font-face {
+	font-family: 'Pixels';
+	src: url('../fonts/Pixels.woff') format('woff');
+	src: url('../fonts/Pixels.ttf') format('truetype');
+}
+
 body {
 	background-color: #292929;
 	color: #ececec;
@@ -22,14 +28,29 @@ body {
 	}
 }
 header,
-#instructions {
+#instructions,
+.options {
 	text-align: center;
 }
+
+h1,
+h2,
+h3 {
+	text-transform: uppercase;
+	font-family: 'Pixels', 'Courier New', Courier, monospace;
+}
+h1 {
+	font-size: 4.5rem;
+}
+h2 {
+	font-size: 3.5rem;
+	margin-bottom: 0.5rem;
+}
+h3 {
+	font-size: 2.6rem;
+	margin-bottom: 0.3rem;
+}
 #instructions {
-	h2 {
-		font-size: 1.5rem;
-		margin-bottom: 0.5rem;
-	}
 	p:first-of-type {
 		font-size: 1.3rem;
 		margin-bottom: 15px;
@@ -56,12 +77,19 @@ header,
 		background-image: url(../sprites/base.png);
 		background-repeat: repeat-x;
 		background-position-y: bottom;
+		z-index: 100;
 	}
 	#score {
+		position: relative;
 		font-family: 'FlappyNumbers', 'Courier New', Courier, monospace;
 		font-size: 35px;
 		text-align: center;
-		margin-top: 20px;
+		z-index: 90;
+		background: #2f787e;
+		display: block;
+		margin: 20px auto;
+		width: fit-content;
+		padding: 5px 2px 5px 5px;
 	}
 	#gameOver {
 		position: absolute;
@@ -69,10 +97,45 @@ header,
 		left: 144px;
 		display: none;
 	}
+	#pipes {
+		z-index: 80;
+		.pipe {
+			position: absolute;
+			z-index: 80;
+			&.pipeTop {
+				transform: rotateX(180deg);
+			}
+		}
+	}
 }
 #debugInfo {
 	border: 1px solid #ececec;
 	margin: 15px;
 	padding: 15px;
 	background-color: #414141;
+}
+
+.options {
+	#birdColor {
+		label {
+			display: inline-block;
+			padding: 5px;
+			border: 3px solid;
+			cursor: pointer;
+			&:hover,
+			&:focus {
+				background-color: #2f787e;
+			}
+		}
+		input {
+			display: none;
+		}
+		input:checked + label {
+			background-color: #4dc1cb;
+			&:hover,
+			&:focus {
+				background-color: #2f787e;
+			}
+		}
+	}
 }

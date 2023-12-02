@@ -1,13 +1,21 @@
 const game = document.getElementById('game')
 const base = document.getElementById('base')
 const bird = document.getElementById('bird')
+const pipesContainer = document.getElementById('pipes')
 const birdStartY = 80
 const birdMaxY = 377
 const minGravity = -30
 const maxGravity = 10
 const debugEnable = true
+const pipeStartX = 405
+const topPipeMin = -295
+const bottomPipeMin = 80
+const topPipeMax = -26
+const bottomPipeMax = 374
+const pipes = []
 
-const events = ['click', 'keydown', 'keyup', 'touchstart']
+const keyboardEvents = ['click', 'keydown', 'keyup', 'touchstart']
+const clickEvents = ['click', 'keydown', 'keyup', 'touchstart']
 let isRunning = false
 let bgPosition = 0
 let intervalID = null
@@ -15,6 +23,12 @@ let gravity = 0
 let frames = 0
 let keyPressed = false
 let birdColor = 'yellow'
+let score = 0
+let pipeIndex = 0
+let pipeMinGapY = 80
+let pipeMaxGapY = 150
+let pipeMinGapX = 400
+let pipeMaxGapX = 600
 
 const debug = (id, val) => {
 	if (!debugEnable) {
@@ -23,6 +37,11 @@ const debug = (id, val) => {
 		document.getElementById('debugInfo').style.display = 'block'
 	}
 	document.getElementById(id).textContent = val
+}
+
+const changeBirdColor = color => {
+	birdColor = color
+	bird.src = `assets/sprites/${birdColor}bird-midflap.png`
 }
 
 const setGravityRange = () => {
@@ -63,6 +82,88 @@ const flap = () => {
 	setGravityRange()
 }
 
+const genetateGapY = top => {
+	let gapY
+	let maxGapY = pipeMaxGapY
+	do {
+		gapY = Math.random() * (maxGapY - pipeMinGapY) + pipeMinGapY
+		// reduce number of loop reducing the max every loop
+		if (gapY + top + 320 > bottomPipeMax && maxGapY - 15 > pipeMinGapY) {
+			maxGapY -= 15
+		}
+	} while (gapY + top + 320 > bottomPipeMax)
+
+	return gapY
+}
+
+const generateTopY = () => {
+	// To do:
+	// Aggiungere limintazioone sulla posione top ripetto al tubo precedente
+}
+
+//generate pipes
+const generatePipes = () => {
+	const pipes = pipesContainer.getElementsByClassName('pipe')
+	const gameWidth = game.offsetWidth
+	let nextTubeX = pipeStartX
+	if (pipes.length) {
+		const lastPipe = pipes[pipes.length - 1]
+		nextTubeX =
+			parseFloat(lastPipe.style.left) + (Math.random() * (pipeMinGapX - pipeMaxGapX) + pipeMinGapX)
+	}
+
+	// add new pipes
+	while (nextTubeX < gameWidth) {
+		pipeIndex++
+		const top = Math.random() * (topPipeMax - topPipeMin) + topPipeMin
+		const gapX = Math.random() * (pipeMaxGapX - pipeMinGapX) + pipeMinGapX
+		const gapY = genetateGapY(top)
+		const topPipe = document.createElement('img')
+		topPipe.id = 'pipe' + pipeIndex
+		topPipe.src = 'assets/sprites/pipe-green.png'
+		topPipe.classList.add('pipe')
+		topPipe.classList.add('pipeTop')
+		topPipe.style.top = top + 'px'
+		topPipe.style.left = nextTubeX + 'px'
+
+		pipeIndex++
+		const bottom = top + gapY + 320
+		const bottomPipe = document.createElement('img')
+		bottomPipe.id = 'pipe' + pipeIndex
+		bottomPipe.src = 'assets/sprites/pipe-green.png'
+		bottomPipe.classList.add('pipe')
+		bottomPipe.classList.add('pipeBottom')
+		bottomPipe.style.top = bottom + 'px'
+		bottomPipe.style.left = nextTubeX + 'px'
+
+		pipesContainer.appendChild(bottomPipe)
+		pipesContainer.appendChild(topPipe)
+
+		nextTubeX += gapX
+	}
+}
+
+//update pipes
+const updatePipes = () => {
+	const pipes = pipesContainer.querySelectorAll('.pipe')
+	if (!isRunning) {
+		if (pipes.length) {
+			for (const pipe of pipes) {
+				pipe.remove()
+			}
+		}
+	}
+	for (const pipe of pipes) {
+		const leftX = parseFloat(pipe.style.left)
+		if (leftX < -52) {
+			pipe.remove()
+			continue
+		}
+		pipe.style.left = leftX - 3.57 + 'px'
+	}
+	generatePipes()
+}
+
 const startGame = () => {
 	document.getElementById('gameOver').style.display = 'none'
 	bird.src = `assets/sprites/${birdColor}bird-midflap.png`
@@ -73,6 +174,9 @@ const startGame = () => {
 	setBirdPosition(birdStartY)
 	gravity = 0
 	frames = 0
+	score = 0
+	pipeIndex = 0
+	pipesContainer.style.display = 'block'
 	intervalID = setInterval(main, 25)
 }
 const stopGame = () => {
@@ -80,6 +184,8 @@ const stopGame = () => {
 	debug('IsRunning', isRunning)
 	clearInterval(intervalID)
 	document.getElementById('gameOver').style.display = 'block'
+	updatePipes()
+	pipesContainer.style.display = 'none'
 }
 
 const main = () => {
@@ -89,8 +195,14 @@ const main = () => {
 		// moving base
 		base.style.backgroundPositionX = parseFloat(base.style.backgroundPositionX) - 3.57 + 'px'
 
+		updatePipes()
+
+		// increase 0.1 evry minute, 24000 = 1000ms / 25ms * 60 / 0.1
+		const gravityOverTime = frames / 24000
+		debug('gravityIncrement', gravityOverTime)
+
 		//incremet gravity
-		gravity += 0.11 + frames / 10000
+		gravity += 0.1 + gravityOverTime
 		setGravityRange()
 		debug('gravityFactor', gravity)
 
@@ -111,6 +223,7 @@ const main = () => {
 		setBirdPosition(getBirdPosition() + gravity)
 		frames++
 		debug('frames', frames)
+		debug('seconds', Math.ceil(frames / 40))
 	} else {
 		stopGame()
 	}
@@ -123,11 +236,8 @@ const playGame = () => {
 	flap()
 }
 
-events.forEach(evnt => {
+keyboardEvents.forEach(evnt => {
 	window.addEventListener(evnt, e => {
-		if (e.type === 'click' || e.type === 'touchstart') {
-			playGame()
-		}
 		if (e.type === 'keydown' && e.code === 'Space') {
 			if (!keyPressed) {
 				keyPressed = true
@@ -139,6 +249,11 @@ events.forEach(evnt => {
 		}
 	})
 })
+clickEvents.forEach(evnt => {
+	game.addEventListener(evnt, e => {
+		playGame()
+	})
+})
 
 debug('gravityFactor', gravity)
 debug('IsRunning', isRunning)
@@ -146,3 +261,5 @@ debug('birdIsCollided', birdIsCollided())
 debug('birdTop', birdStartY)
 debug('frames', frames)
 debug('birdRotation', 0)
+debug('seconds', 0)
+debug('gravityIncrement', 0)
