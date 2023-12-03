@@ -39,8 +39,11 @@ const debug = (id, val) => {
 	} else {
 		document.getElementById('debugInfo').style.display = 'block'
 	}
+	// console.log(id, val)
 	document.getElementById(id).textContent = val
 }
+
+const sleep = delay => new Promise(resolve => setTimeout(resolve, delay))
 
 const changeBirdColor = color => {
 	birdColor = color
@@ -91,7 +94,7 @@ const genetateGapY = top => {
 const generateTopY = () => {
 	const pipes = pipesContainer.getElementsByClassName('pipe')
 	let min = topPipeMin
-	let max = topPipeMax
+	let max = topPipeMin + 34 + 80
 	if (pipes.length) {
 		//get last pipe top
 		const lastTopPipeTop = parseFloat(pipes[pipes.length - 1].style.top)
@@ -163,6 +166,7 @@ const generatePipes = () => {
 
 //update pipes
 const updatePipes = () => {
+	console.log('update pipes')
 	const pipes = pipesContainer.querySelectorAll('.pipe')
 	if (!isRunning) {
 		if (pipes.length) {
@@ -254,6 +258,7 @@ const flap = () => {
 }
 
 const startGame = () => {
+	console.log('start')
 	debug('endigSequence', endigSequence)
 	debug('IsRunning', isRunning)
 
@@ -266,13 +271,13 @@ const startGame = () => {
 	gravity = 0
 	frames = 0
 	score = 0
-	pipeIndex = 0
 	lastFrameTime = 0
 	pipesContainer.style.display = 'block'
 	intervalID = setInterval(main, 25)
 	debug('IsRunning', isRunning)
 }
-const stopGame = () => {
+const stopGame = async () => {
+	console.log('Ending sequnce')
 	gravity = maxGravity
 	isRunning = false
 	debug('IsRunning', isRunning)
@@ -280,14 +285,15 @@ const stopGame = () => {
 
 	if (!endigSequence) {
 		endigSequence = true
-		setTimeout(() => {
-			clearInterval(intervalID)
-			document.getElementById('gameOver').style.display = 'block'
-			pipesContainer.style.display = 'none'
-			updatePipes()
-			endigSequence = false
-			debug('endigSequence', endigSequence)
-		}, 1000)
+		await sleep(1000)
+
+		clearInterval(intervalID)
+		pipesContainer.style.display = 'none'
+		pipeIndex = 0
+		updatePipes()
+		document.getElementById('gameOver').style.display = 'block'
+		endigSequence = false
+		debug('endigSequence', endigSequence)
 	}
 }
 
@@ -300,7 +306,10 @@ const main = () => {
 
 		updatePipes()
 	} else {
-		stopGame()
+		if (!endigSequence) {
+			console.log('endigSequence MAIN')
+			stopGame()
+		}
 	}
 	// increase 0.1 evry minute, 24000 = 1000ms / 25ms * 60 / 0.1
 	const gravityOverTime = frames / 24000
