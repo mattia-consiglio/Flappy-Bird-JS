@@ -50,6 +50,11 @@ h3 {
 	font-size: 1.3rem;
 	margin-bottom: 0.3rem;
 }
+
+.flex {
+	display: flex;
+	justify-content: center;
+}
 #instructions {
 	p:first-of-type {
 		font-size: 1.3rem;
@@ -117,6 +122,8 @@ h3 {
 	margin: 15px;
 	padding: 15px;
 	background-color: #414141;
+	width: 530px;
+	display: none;
 }
 
 .options {

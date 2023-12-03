@@ -6,7 +6,7 @@ const birdStartY = 80
 const birdMaxY = 377
 const minGravity = -30
 const maxGravity = 10
-const debugEnable = true
+let debugEnable = false
 const pipeStartX = 405
 const topPipeMin = -295
 const bottomPipeMin = 80
@@ -33,14 +33,16 @@ let pipeMaxGapX = 300
 
 let lastFrameTime = 0
 
-const debug = (id, val) => {
+const debug = (id = null, val = null) => {
 	if (!debugEnable) {
 		document.getElementById('debugInfo').style.display = 'none'
 	} else {
 		document.getElementById('debugInfo').style.display = 'block'
+		if (id && val) {
+			document.getElementById(id).textContent = val
+		}
 	}
 	// console.log(id, val)
-	document.getElementById(id).textContent = val
 }
 
 const sleep = delay => new Promise(resolve => setTimeout(resolve, delay))
@@ -285,7 +287,7 @@ const stopGame = async () => {
 
 	if (!endigSequence) {
 		endigSequence = true
-		await sleep(1000)
+		await sleep(900)
 
 		clearInterval(intervalID)
 		pipesContainer.style.display = 'none'
@@ -367,6 +369,12 @@ clickEvents.forEach(evnt => {
 	game.addEventListener(evnt, e => {
 		playGame()
 	})
+})
+
+document.getElementById('enableDebugCheckbox').addEventListener('change', e => {
+	console.log(e.target.checked)
+	debugEnable = e.target.checked
+	debug()
 })
 
 debug('gravityFactor', gravity)

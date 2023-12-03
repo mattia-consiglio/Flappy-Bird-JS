@@ -30,7 +30,7 @@
 				<img src="assets/sprites/gameover.png" alt="Game Over" id="gameOver">
 			</div>
 		</section>
-		<section>
+		<section class="flex">
 
 			<div id="debugInfo">
 				<p>Is running: <span id="IsRunning"></span></p>
@@ -60,17 +60,25 @@
 		<section>
 			<div class="options">
 				<h2>Options</h2>
-				<div id="birdColor">
-					<h3>Bird color</h3>
-					<input type="radio" name="birdColor" id="birdColorBlue">
-					<label for="birdColorBlue" onclick="changeBirdColor('blue')" tabindex="0"><img
-							src="assets/sprites/bluebird-midflap.png" alt=""></label>
-					<input type="radio" name="birdColor" id="birdColorYellow" checked>
-					<label for="birdColorYellow" onclick="changeBirdColor('yellow')" tabindex="0"> <img
-							src="assets/sprites/yellowbird-midflap.png" alt=""></label>
-					<input type="radio" name="birdColor" id="birdColorRed">
-					<label for="birdColorRed" onclick="changeBirdColor('red')" tabindex="0"><img
-							src="assets/sprites/redbird-midflap.png" alt=""></label>
+				<div class="flex">
+					<div id="birdColor">
+						<h3>Bird color</h3>
+						<input type="radio" name="birdColor" id="birdColorBlue">
+						<label for="birdColorBlue" onclick="changeBirdColor('blue')" tabindex="0"><img
+								src="assets/sprites/bluebird-midflap.png" alt=""></label>
+						<input type="radio" name="birdColor" id="birdColorYellow" checked>
+						<label for="birdColorYellow" onclick="changeBirdColor('yellow')" tabindex="0"> <img
+								src="assets/sprites/yellowbird-midflap.png" alt=""></label>
+						<input type="radio" name="birdColor" id="birdColorRed">
+						<label for="birdColorRed" onclick="changeBirdColor('red')" tabindex="0"><img
+								src="assets/sprites/redbird-midflap.png" alt=""></label>
+					</div>
+					<div id="gravityFactor">
+					</div>
+					<div id="enableDebug">
+						<h3>Enable debug</h3>
+						<input type="checkbox" id="enableDebugCheckbox">
+					</div>
 				</div>
 			</div>
 		</section>
