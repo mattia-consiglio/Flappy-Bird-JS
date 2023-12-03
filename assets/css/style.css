@@ -92,13 +92,12 @@ h3 {
   font-size: 35px;
   text-align: center;
   z-index: 90;
-  background: #2f787e;
   display: block;
   margin: 20px auto;
   width: -webkit-fit-content;
   width: -moz-fit-content;
   width: fit-content;
-  padding: 5px 2px 5px 5px;
+  text-shadow: -2px 0px 0 black, 2px 0px 0 black, 0px -2px 0 black, 0px 2px 0 black, -2px 0px 3px #4dc1cb, 2px 0px 3px #4dc1cb, 0px -2px 3px #4dc1cb, 0px 2px 3px #4dc1cb, -2px 0px 5px #4dc1cb, 2px 0px 5px #4dc1cb, 0px -2px 5px #4dc1cb, 0px 2px 5px #4dc1cb;
 }
 #game #gameOver {
   position: absolute;

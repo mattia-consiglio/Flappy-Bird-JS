@@ -17,6 +17,7 @@ const pipes = []
 const keyboardEvents = ['click', 'keydown', 'keyup', 'touchstart']
 const clickEvents = ['click', 'keydown', 'keyup', 'touchstart']
 let isRunning = false
+let endigSequence = false
 let bgPosition = 0
 let intervalID = null
 let gravity = 0
@@ -26,9 +27,11 @@ let birdColor = 'yellow'
 let score = 0
 let pipeIndex = 0
 let pipeMinGapY = 80
-let pipeMaxGapY = 150
-let pipeMinGapX = 400
-let pipeMaxGapX = 600
+let pipeMaxGapY = 100
+let pipeMinGapX = 200
+let pipeMaxGapX = 300
+
+let lastFrameTime = 0
 
 const debug = (id, val) => {
 	if (!debugEnable) {
@@ -69,17 +72,6 @@ const setBirdPosition = top => {
 		top = birdMaxY
 	}
 	bird.style.top = top + 'px'
-}
-
-const birdIsCollided = () => {
-	const birdIsCollided = getBirdPosition() >= birdMaxY
-	debug('birdIsCollided', birdIsCollided)
-	return birdIsCollided
-}
-
-const flap = () => {
-	gravity -= 3
-	setGravityRange()
 }
 
 const genetateGapY = top => {
@@ -135,16 +127,14 @@ const generatePipes = () => {
 	if (pipes.length) {
 		const lastPipe = pipes[pipes.length - 1]
 		nextTubeX =
-			parseFloat(lastPipe.style.left) + (Math.random() * (pipeMinGapX - pipeMaxGapX) + pipeMinGapX)
+			parseFloat(lastPipe.style.left) + (Math.random() * (pipeMaxGapX - pipeMinGapX) + pipeMinGapX)
 	}
 
 	// add new pipes
 	while (nextTubeX < gameWidth) {
 		pipeIndex++
 		const top = generateTopY()
-		const maxGapY =
-			pipeMaxGapY - frames / 2400 >= pipeMinGapY ? pipeMaxGapY - frames / 2400 : pipeMinGapY
-		const gapX = Math.random() * (maxGapY - pipeMinGapX) + pipeMinGapX
+		const gapX = Math.random() * (pipeMaxGapX - pipeMinGapX) + pipeMinGapX
 		const gapY = genetateGapY(top)
 		const topPipe = document.createElement('img')
 		topPipe.id = 'pipe' + pipeIndex
@@ -192,11 +182,84 @@ const updatePipes = () => {
 	generatePipes()
 }
 
+const updateScore = () => {
+	const pipes = pipesContainer.getElementsByClassName('pipe')
+	if (pipes.length) {
+		let firstPipe = pipes[0]
+
+		const firstPipeLeftX = parseFloat(firstPipe.style.left)
+		const birdLeftX = parseFloat(window.getComputedStyle(bird).getPropertyValue('left'))
+		const birdWidth = parseFloat(window.getComputedStyle(bird).getPropertyValue('width'))
+		const gapX = firstPipeLeftX - birdLeftX - birdWidth
+		debug('birdGapX', gapX)
+
+		// 52px is th width of the pipe
+		// Prevent counting score multiple time if bird is out of pipe
+		// 60 frames === 1.5 second (40 frames per second)
+		if (gapX <= -52 && frames - lastFrameTime >= 60) {
+			score++
+			lastFrameTime = frames
+			debug('lastFrameTime', lastFrameTime)
+		}
+		document.getElementById('score').textContent = score
+	}
+}
+
+const birdIsCollided = () => {
+	let birdIsCollided = false
+	//check colision with the ground
+	if (getBirdPosition() >= birdMaxY) {
+		birdIsCollided = true
+		debug('birdIsCollided', birdIsCollided)
+
+		return birdIsCollided
+	}
+	//check colision with pipes
+	const pipes = pipesContainer.getElementsByClassName('pipe')
+	if (pipes.length) {
+		const birdLeftX = parseFloat(window.getComputedStyle(bird).getPropertyValue('left'))
+		const birdWidth = parseFloat(window.getComputedStyle(bird).getPropertyValue('width'))
+		const birdTopY = parseFloat(window.getComputedStyle(bird).getPropertyValue('top'))
+		const birdHeight = parseFloat(window.getComputedStyle(bird).getPropertyValue('height'))
+		for (const pipe of pipes) {
+			const pipeLeftX = parseFloat(pipe.style.left)
+			const pipeWidth = parseFloat(window.getComputedStyle(pipe).getPropertyValue('width'))
+			const pipeTopY = parseFloat(pipe.style.top)
+			const pipeHeight = parseFloat(window.getComputedStyle(pipe).getPropertyValue('height'))
+			if (
+				birdLeftX + birdWidth > pipeLeftX &&
+				birdLeftX < pipeLeftX + pipeWidth &&
+				birdTopY + birdHeight > pipeTopY &&
+				birdTopY < pipeTopY + pipeHeight
+			) {
+				birdIsCollided = true
+				debug('birdIsCollided', birdIsCollided)
+
+				return birdIsCollided
+			}
+		}
+		birdIsCollided = false
+		debug('birdIsCollided', birdIsCollided)
+		return birdIsCollided
+	}
+
+	return birdIsCollided
+}
+
+const flap = () => {
+	if (isRunning && !birdIsCollided()) {
+		gravity -= 3
+		setGravityRange()
+	}
+}
+
 const startGame = () => {
+	debug('endigSequence', endigSequence)
+	debug('IsRunning', isRunning)
+
 	document.getElementById('gameOver').style.display = 'none'
 	bird.src = `assets/sprites/${birdColor}bird-midflap.png`
 	isRunning = true
-	debug('IsRunning', isRunning)
 	game.style.backgroundPositionX = '0px'
 	base.style.backgroundPositionX = '0px'
 	setBirdPosition(birdStartY)
@@ -204,64 +267,78 @@ const startGame = () => {
 	frames = 0
 	score = 0
 	pipeIndex = 0
+	lastFrameTime = 0
 	pipesContainer.style.display = 'block'
 	intervalID = setInterval(main, 25)
+	debug('IsRunning', isRunning)
 }
 const stopGame = () => {
+	gravity = maxGravity
 	isRunning = false
 	debug('IsRunning', isRunning)
-	clearInterval(intervalID)
-	document.getElementById('gameOver').style.display = 'block'
-	updatePipes()
-	pipesContainer.style.display = 'none'
+	debug('endigSequence', endigSequence)
+
+	if (!endigSequence) {
+		endigSequence = true
+		setTimeout(() => {
+			clearInterval(intervalID)
+			document.getElementById('gameOver').style.display = 'block'
+			pipesContainer.style.display = 'none'
+			updatePipes()
+			endigSequence = false
+			debug('endigSequence', endigSequence)
+		}, 1000)
+	}
 }
 
 const main = () => {
-	if (!birdIsCollided()) {
+	if (isRunning && !birdIsCollided()) {
 		// moving bg
 		game.style.backgroundPositionX = parseFloat(game.style.backgroundPositionX) - 4.64 + 'px'
 		// moving base
 		base.style.backgroundPositionX = parseFloat(base.style.backgroundPositionX) - 3.57 + 'px'
 
 		updatePipes()
-
-		// increase 0.1 evry minute, 24000 = 1000ms / 25ms * 60 / 0.1
-		const gravityOverTime = frames / 24000
-		debug('gravityIncrement', gravityOverTime)
-
-		//incremet gravity
-		gravity += 0.1 + gravityOverTime
-		setGravityRange()
-		debug('gravityFactor', gravity)
-
-		// rotating the bird
-		const rotation = gravity * 5
-		bird.style.transform = 'rotate(' + rotation + 'deg)'
-		debug('birdRotation', rotation)
-
-		//changhing image scr based on the bird rotation
-		if (rotation <= -3) {
-			bird.src = `assets/sprites/${birdColor}bird-upflap.png`
-		} else if (rotation > -3 && rotation <= 2) {
-			bird.src = `assets/sprites/${birdColor}bird-midflap.png`
-		} else {
-			bird.src = `assets/sprites/${birdColor}bird-downflap.png`
-		}
-
-		setBirdPosition(getBirdPosition() + gravity)
-		frames++
-		debug('frames', frames)
-		debug('seconds', Math.ceil(frames / 40))
 	} else {
 		stopGame()
 	}
+	// increase 0.1 evry minute, 24000 = 1000ms / 25ms * 60 / 0.1
+	const gravityOverTime = frames / 24000
+	debug('gravityIncrement', gravityOverTime)
+
+	//incremet gravity
+	gravity += 0.1 + gravityOverTime
+	setGravityRange()
+	debug('gravityFactor', gravity)
+
+	// rotating the bird
+	const rotation = gravity * 5
+	bird.style.transform = 'rotate(' + rotation + 'deg)'
+	debug('birdRotation', rotation)
+
+	//changhing image scr based on the bird rotation
+	if (rotation <= -3) {
+		bird.src = `assets/sprites/${birdColor}bird-upflap.png`
+	} else if (rotation > -3 && rotation <= 2) {
+		bird.src = `assets/sprites/${birdColor}bird-midflap.png`
+	} else {
+		bird.src = `assets/sprites/${birdColor}bird-downflap.png`
+	}
+
+	setBirdPosition(getBirdPosition() + gravity)
+	frames++
+	debug('frames', frames)
+	debug('seconds', Math.ceil(frames / 40))
+	updateScore()
 }
 
 const playGame = () => {
-	if (!isRunning) {
+	if (!isRunning && !endigSequence) {
 		startGame()
 	}
-	flap()
+	if (isRunning && !endigSequence) {
+		flap()
+	}
 }
 
 keyboardEvents.forEach(evnt => {
@@ -291,3 +368,5 @@ debug('frames', frames)
 debug('birdRotation', 0)
 debug('seconds', 0)
 debug('gravityIncrement', 0)
+debug('birdGapX', 'undefined')
+debug('endigSequence', endigSequence)
