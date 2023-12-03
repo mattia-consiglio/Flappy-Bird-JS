@@ -97,8 +97,34 @@ const genetateGapY = top => {
 }
 
 const generateTopY = () => {
-	// To do:
-	// Aggiungere limintazioone sulla posione top ripetto al tubo precedente
+	const pipes = pipesContainer.getElementsByClassName('pipe')
+	let min = topPipeMin
+	let max = topPipeMax
+	if (pipes.length) {
+		//get last pipe top
+		const lastTopPipeTop = parseFloat(pipes[pipes.length - 1].style.top)
+		const lastBottomPipeTop = parseFloat(pipes[pipes.length - 2].style.top)
+		const lastPipeGapY = (lastTopPipeTop - lastBottomPipeTop + 320) / 4
+		let gapX = pipeMaxGapX / 20
+		if (pipes.length >= 4) {
+			//get previous pipe gapX
+			gapX =
+				(parseFloat(pipes[pipes.length - 3].style.left) -
+					parseFloat(pipes[pipes.length - 1].style.left) -
+					52) /
+				20
+		}
+		min =
+			lastTopPipeTop - 200 - lastPipeGapY - gapX < topPipeMin
+				? topPipeMin
+				: lastTopPipeTop - 200 - lastPipeGapY - gapX
+		max =
+			lastTopPipeTop + 200 + lastPipeGapY + gapX > topPipeMax
+				? topPipeMax
+				: lastTopPipeTop + 200 + lastPipeGapY + gapX
+	}
+
+	return Math.random() * (max - min) + min
 }
 
 //generate pipes
@@ -115,8 +141,10 @@ const generatePipes = () => {
 	// add new pipes
 	while (nextTubeX < gameWidth) {
 		pipeIndex++
-		const top = Math.random() * (topPipeMax - topPipeMin) + topPipeMin
-		const gapX = Math.random() * (pipeMaxGapX - pipeMinGapX) + pipeMinGapX
+		const top = generateTopY()
+		const maxGapY =
+			pipeMaxGapY - frames / 2400 >= pipeMinGapY ? pipeMaxGapY - frames / 2400 : pipeMinGapY
+		const gapX = Math.random() * (maxGapY - pipeMinGapX) + pipeMinGapX
 		const gapY = genetateGapY(top)
 		const topPipe = document.createElement('img')
 		topPipe.id = 'pipe' + pipeIndex
