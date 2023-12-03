@@ -14,7 +14,7 @@ const topPipeMax = -26
 const bottomPipeMax = 374
 const pipes = []
 
-const keyboardEvents = ['click', 'keydown', 'keyup', 'touchstart']
+const keyboardEvents = ['click', 'keydown', 'keyup']
 const clickEvents = ['click', 'keydown', 'keyup', 'touchstart']
 let isRunning = false
 let endigSequence = false
