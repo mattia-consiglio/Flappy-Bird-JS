@@ -2,6 +2,9 @@ const game = document.getElementById('game')
 const base = document.getElementById('base')
 const bird = document.getElementById('bird')
 const pipesContainer = document.getElementById('pipes')
+const birdLeftX = parseFloat(window.getComputedStyle(bird).getPropertyValue('left'))
+const birdWidth = parseFloat(window.getComputedStyle(bird).getPropertyValue('width'))
+
 const birdStartY = 80
 const birdMaxY = 377
 const minGravity = -30
@@ -33,16 +36,19 @@ let pipeMaxGapX = 300
 
 let lastFrameTime = 0
 
-const debug = (id = null, val = null) => {
+const toggleDebug = e => {
+	debugEnable = e.target.checked
 	if (!debugEnable) {
 		document.getElementById('debugInfo').style.display = 'none'
 	} else {
 		document.getElementById('debugInfo').style.display = 'block'
-		if (id && val) {
-			document.getElementById(id).textContent = val
-		}
 	}
-	// console.log(id, val)
+}
+
+const debug = (id = null, val = null) => {
+	if (debugEnable && id && val) {
+		document.getElementById(id).innerText = val
+	}
 }
 
 const sleep = delay => new Promise(resolve => setTimeout(resolve, delay))
@@ -194,8 +200,7 @@ const updateScore = () => {
 		let firstPipe = pipes[0]
 
 		const firstPipeLeftX = parseFloat(firstPipe.style.left)
-		const birdLeftX = parseFloat(window.getComputedStyle(bird).getPropertyValue('left'))
-		const birdWidth = parseFloat(window.getComputedStyle(bird).getPropertyValue('width'))
+
 		const gapX = firstPipeLeftX - birdLeftX - birdWidth
 		debug('birdGapX', gapX)
 
@@ -223,7 +228,6 @@ const birdIsCollided = () => {
 	//check colision with pipes
 	const pipes = pipesContainer.getElementsByClassName('pipe')
 	if (pipes.length) {
-		const birdLeftX = parseFloat(window.getComputedStyle(bird).getPropertyValue('left'))
 		const birdWidth = parseFloat(window.getComputedStyle(bird).getPropertyValue('width'))
 		const birdTopY = parseFloat(window.getComputedStyle(bird).getPropertyValue('top'))
 		const birdHeight = parseFloat(window.getComputedStyle(bird).getPropertyValue('height'))
@@ -287,7 +291,7 @@ const stopGame = async () => {
 
 	if (!endigSequence) {
 		endigSequence = true
-		await sleep(900)
+		await sleep(900 * (1 - parseFloat(bird.style.top) / birdMaxY))
 
 		clearInterval(intervalID)
 		pipesContainer.style.display = 'none'
@@ -372,9 +376,7 @@ clickEvents.forEach(evnt => {
 })
 
 document.getElementById('enableDebugCheckbox').addEventListener('change', e => {
-	console.log(e.target.checked)
-	debugEnable = e.target.checked
-	debug()
+	toggleDebug(e)
 })
 
 debug('gravityFactor', gravity)
