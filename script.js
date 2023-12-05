@@ -2,8 +2,12 @@ const game = document.getElementById('game')
 const base = document.getElementById('base')
 const bird = document.getElementById('bird')
 const pipesContainer = document.getElementById('pipes')
+const inputEnableDebug = document.getElementById('enableDebugCheckbox')
+const inputChangeGravity = document.getElementById('gravityRange')
+const inputChangeSpeed = document.getElementById('speedRange')
 const birdLeftX = parseFloat(window.getComputedStyle(bird).getPropertyValue('left'))
 const birdWidth = parseFloat(window.getComputedStyle(bird).getPropertyValue('width'))
+const gameWidth = game.offsetWidth
 
 const birdStartY = 80
 const birdMaxY = 377
@@ -35,27 +39,61 @@ let pipeMinGapX = 200
 let pipeMaxGapX = 300
 
 let lastFrameTime = 0
+let baseGravity = 0.2
+let speedMultiplier = 1
+let settings = {
+	birdColor,
+	debugEnable,
+	baseGravity,
+	speedMultiplier,
+}
 
-const toggleDebug = e => {
-	debugEnable = e.target.checked
-	if (!debugEnable) {
+const updateSettings = () => {
+	localStorage.setItem('setting', JSON.stringify(settings))
+}
+
+const toggleDebug = enable => {
+	if (!enable) {
 		document.getElementById('debugInfo').style.display = 'none'
 	} else {
 		document.getElementById('debugInfo').style.display = 'block'
 	}
+	settings.debugEnable = enable
+	updateSettings()
 }
 
 const debug = (id = null, val = null) => {
-	if (debugEnable && id && val) {
+	if (debugEnable && id !== null && val !== null) {
 		document.getElementById(id).innerText = val
 	}
+}
+
+const changeBaseGravity = gravity => {
+	baseGravity = parseFloat(gravity)
+	settings.baseGravity = baseGravity
+	updateSettings()
+}
+
+const changeSpeedMultiplier = speed => {
+	speedMultiplier = parseFloat(speed)
+	settings.speedMultiplier = speedMultiplier
+	updateSettings()
 }
 
 const sleep = delay => new Promise(resolve => setTimeout(resolve, delay))
 
 const changeBirdColor = color => {
-	birdColor = color
+	if (typeof color === 'string') {
+		birdColor = color
+	} else {
+		birdColor = color.value
+	}
 	bird.src = `assets/sprites/${birdColor}bird-midflap.png`
+	const body = document.getElementsByTagName('body')[0]
+	body.setAttribute('class', birdColor)
+	// body.className = color
+	settings.birdColor = birdColor
+	updateSettings()
 }
 
 const setGravityRange = () => {
@@ -66,7 +104,7 @@ const setGravityRange = () => {
 		gravity = maxGravity
 	}
 	if (getBirdPosition() === 0) {
-		gravity = 0.1
+		gravity = baseGravity
 	}
 	debug('gravityFactor', gravity)
 }
@@ -133,7 +171,6 @@ const generateTopY = () => {
 //generate pipes
 const generatePipes = () => {
 	const pipes = pipesContainer.getElementsByClassName('pipe')
-	const gameWidth = game.offsetWidth
 	let nextTubeX = pipeStartX
 	if (pipes.length) {
 		const lastPipe = pipes[pipes.length - 1]
@@ -174,7 +211,6 @@ const generatePipes = () => {
 
 //update pipes
 const updatePipes = () => {
-	console.log('update pipes')
 	const pipes = pipesContainer.querySelectorAll('.pipe')
 	if (!isRunning) {
 		if (pipes.length) {
@@ -189,7 +225,7 @@ const updatePipes = () => {
 			pipe.remove()
 			continue
 		}
-		pipe.style.left = leftX - 3.57 + 'px'
+		pipe.style.left = leftX - 3.57 * speedMultiplier + 'px'
 	}
 	generatePipes()
 }
@@ -264,7 +300,6 @@ const flap = () => {
 }
 
 const startGame = () => {
-	console.log('start')
 	debug('endigSequence', endigSequence)
 	debug('IsRunning', isRunning)
 
@@ -283,7 +318,6 @@ const startGame = () => {
 	debug('IsRunning', isRunning)
 }
 const stopGame = async () => {
-	console.log('Ending sequnce')
 	gravity = maxGravity
 	isRunning = false
 	debug('IsRunning', isRunning)
@@ -306,14 +340,15 @@ const stopGame = async () => {
 const main = () => {
 	if (isRunning && !birdIsCollided()) {
 		// moving bg
-		game.style.backgroundPositionX = parseFloat(game.style.backgroundPositionX) - 4.64 + 'px'
+		game.style.backgroundPositionX =
+			parseFloat(game.style.backgroundPositionX) - 4.64 * speedMultiplier + 'px'
 		// moving base
-		base.style.backgroundPositionX = parseFloat(base.style.backgroundPositionX) - 3.57 + 'px'
+		base.style.backgroundPositionX =
+			parseFloat(base.style.backgroundPositionX) - 3.57 * speedMultiplier + 'px'
 
 		updatePipes()
 	} else {
 		if (!endigSequence) {
-			console.log('endigSequence MAIN')
 			stopGame()
 		}
 	}
@@ -322,7 +357,7 @@ const main = () => {
 	debug('gravityIncrement', gravityOverTime)
 
 	//incremet gravity
-	gravity += 0.1 + gravityOverTime
+	gravity += baseGravity + gravityOverTime
 	setGravityRange()
 	debug('gravityFactor', gravity)
 
@@ -364,6 +399,7 @@ keyboardEvents.forEach(evnt => {
 				playGame()
 			}
 		}
+		//prevent keep pressing the space key
 		if (e.type === 'keyup' && e.code === 'Space') {
 			keyPressed = false
 		}
@@ -375,8 +411,30 @@ clickEvents.forEach(evnt => {
 	})
 })
 
-document.getElementById('enableDebugCheckbox').addEventListener('change', e => {
-	toggleDebug(e)
+const updateRangeInput = input => {
+	const max = input.max
+	const min = input.min
+	const value = input.value
+	const step = input.step
+	let perc = 0
+	if (value > min) {
+		perc = (value - min) / (max - min)
+	}
+	input.style.setProperty('--value', perc * 100 + '%')
+}
+
+inputEnableDebug.addEventListener('change', e => {
+	toggleDebug(e.target.checked)
+})
+
+inputChangeGravity.addEventListener('input', e => {
+	changeBaseGravity(e.target.value)
+	updateRangeInput(e.target)
+})
+
+inputChangeSpeed.addEventListener('input', e => {
+	changeSpeedMultiplier(e.target.value)
+	updateRangeInput(e.target)
 })
 
 debug('gravityFactor', gravity)
@@ -389,3 +447,33 @@ debug('seconds', 0)
 debug('gravityIncrement', 0)
 debug('birdGapX', 'undefined')
 debug('endigSequence', endigSequence)
+
+const rangeInputs = document.querySelectorAll('input[type=range]')
+
+if (localStorage.getItem('setting')) {
+	settings = JSON.parse(localStorage.getItem('setting'))
+	debugEnable = settings.debugEnable
+	inputEnableDebug.checked = debugEnable
+	toggleDebug(debugEnable)
+
+	baseGravity = settings.baseGravity
+	inputChangeGravity.value = baseGravity
+
+	speedMultiplier = settings.speedMultiplier
+	inputChangeSpeed.value = speedMultiplier
+	changeBirdColor(settings.birdColor)
+} else {
+	toggleDebug(debugEnable)
+	changeBirdColor(birdColor)
+}
+
+const birdColorInput = document.querySelectorAll('#birdColor input')
+for (const input of birdColorInput) {
+	if (input.value === birdColor) {
+		input.checked = true
+	}
+}
+
+rangeInputs.forEach(rangeInput => {
+	updateRangeInput(rangeInput)
+})

@@ -61,23 +61,30 @@
 			<div class="options">
 				<h2>Options</h2>
 				<div class="flex">
-					<div id="birdColor">
+					<div id="birdColor" class="option">
 						<h3>Bird color</h3>
-						<input type="radio" name="birdColor" id="birdColorBlue">
-						<label for="birdColorBlue" onclick="changeBirdColor('blue')" tabindex="0"><img
-								src="assets/sprites/bluebird-midflap.png" alt=""></label>
-						<input type="radio" name="birdColor" id="birdColorYellow" checked>
-						<label for="birdColorYellow" onclick="changeBirdColor('yellow')" tabindex="0"> <img
-								src="assets/sprites/yellowbird-midflap.png" alt=""></label>
-						<input type="radio" name="birdColor" id="birdColorRed">
-						<label for="birdColorRed" onclick="changeBirdColor('red')" tabindex="0"><img
-								src="assets/sprites/redbird-midflap.png" alt=""></label>
+						<div>
+							<input type="radio" name="birdColor" id="birdColorBlue" value="blue" onchange="changeBirdColor(this)">
+							<label for="birdColorBlue"><img src="assets/sprites/bluebird-midflap.png" alt=""></label>
+							<input type="radio" name="birdColor" id="birdColorYellow" value="yellow" onchange="changeBirdColor(this)">
+							<label for="birdColorYellow" tabindex="0"> <img src="assets/sprites/yellowbird-midflap.png"
+									alt=""></label>
+							<input type="radio" name="birdColor" id="birdColorRed" value="red" onchange="changeBirdColor(this)">
+							<label for="birdColorRed" tabindex="0"><img src="assets/sprites/redbird-midflap.png" alt=""></label>
+						</div>
 					</div>
-					<div id="gravityFactor">
+					<div id="changeGravity" class="option">
+						<h3>Gravity</h3>
+						<input type="range" min="0.1" max="0.35" step="0.01" value="0.2" id="gravityRange">
 					</div>
-					<div id="enableDebug">
+					<div id="changeSpeed" class="option">
+						<h3>Speed</h3>
+						<input type="range" min="0.5" max="2" step="0.1" value="1" id="speedRange">
+					</div>
+					<div id="enableDebug" class="option">
 						<h3>Enable debug</h3>
 						<input type="checkbox" id="enableDebugCheckbox">
+						<label for="enableDebugCheckbox" tabindex="0"></label>
 					</div>
 				</div>
 			</div>
