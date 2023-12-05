@@ -11,6 +11,7 @@ const birdHeight = parseFloat(window.getComputedStyle(bird).getPropertyValue('he
 let gameWidth = game.offsetWidth
 
 const birdStartY = 80
+let birdY = birdStartY
 const birdMaxY = 377
 const minGravity = -30
 const maxGravity = 10
@@ -50,6 +51,7 @@ let settings = {
 	speedMultiplier,
 	bestScore,
 }
+const pipesArr = []
 
 const updateSettings = () => {
 	localStorage.setItem('setting', JSON.stringify(settings))
@@ -113,9 +115,8 @@ const setGravityRange = () => {
 }
 
 const getBirdPosition = () => {
-	const top = parseFloat(bird.style.top)
-	document.getElementById('birdTop').textContent = top
-	return top
+	debug('birdTop', birdY)
+	return birdY
 }
 const setBirdPosition = top => {
 	if (top < 0) {
@@ -123,6 +124,7 @@ const setBirdPosition = top => {
 	} else if (top > birdMaxY) {
 		top = birdMaxY
 	}
+	birdY = top
 	bird.style.top = top + 'px'
 }
 
@@ -194,6 +196,7 @@ const generatePipes = () => {
 		topPipe.classList.add('pipeTop')
 		topPipe.style.top = top + 'px'
 		topPipe.style.left = nextTubeX + 'px'
+		pipesArr.push({ id: 'pipe' + pipeIndex, left: nextTubeX })
 
 		pipeIndex++
 		const bottom = top + gapY + 320
@@ -204,6 +207,7 @@ const generatePipes = () => {
 		bottomPipe.classList.add('pipeBottom')
 		bottomPipe.style.top = bottom + 'px'
 		bottomPipe.style.left = nextTubeX + 'px'
+		pipesArr.push({ id: 'pipe' + pipeIndex, left: nextTubeX })
 
 		pipesContainer.appendChild(bottomPipe)
 		pipesContainer.appendChild(topPipe)
@@ -273,9 +277,9 @@ const birdIsCollided = () => {
 
 		for (const pipe of pipes) {
 			const pipeLeftX = parseFloat(pipe.style.left)
-			const pipeWidth = parseFloat(window.getComputedStyle(pipe).getPropertyValue('width'))
+			const pipeWidth = 52
 			const pipeTopY = parseFloat(pipe.style.top)
-			const pipeHeight = parseFloat(window.getComputedStyle(pipe).getPropertyValue('height'))
+			const pipeHeight = 320
 			if (
 				birdLeftX + birdWidth > pipeLeftX &&
 				birdLeftX < pipeLeftX + pipeWidth &&
@@ -330,7 +334,6 @@ const stopGame = async () => {
 
 	bestScore = score > bestScore ? score : bestScore
 	settings.bestScore = bestScore
-	console.log(bestScore)
 	updateSettings()
 
 	if (!endigSequence) {
