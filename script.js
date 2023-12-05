@@ -7,14 +7,15 @@ const inputChangeGravity = document.getElementById('gravityRange')
 const inputChangeSpeed = document.getElementById('speedRange')
 const birdLeftX = parseFloat(window.getComputedStyle(bird).getPropertyValue('left'))
 const birdWidth = parseFloat(window.getComputedStyle(bird).getPropertyValue('width'))
-const gameWidth = game.offsetWidth
+const birdHeight = parseFloat(window.getComputedStyle(bird).getPropertyValue('height'))
+let gameWidth = game.offsetWidth
 
 const birdStartY = 80
 const birdMaxY = 377
 const minGravity = -30
 const maxGravity = 10
 let debugEnable = false
-const pipeStartX = 405
+let pipeStartX = gameWidth * 0.7
 const topPipeMin = -295
 const bottomPipeMin = 80
 const topPipeMax = -26
@@ -268,9 +269,8 @@ const birdIsCollided = () => {
 	//check colision with pipes
 	const pipes = pipesContainer.getElementsByClassName('pipe')
 	if (pipes.length) {
-		const birdWidth = parseFloat(window.getComputedStyle(bird).getPropertyValue('width'))
-		const birdTopY = parseFloat(window.getComputedStyle(bird).getPropertyValue('top'))
-		const birdHeight = parseFloat(window.getComputedStyle(bird).getPropertyValue('height'))
+		const birdTopY = parseFloat(bird.style.top)
+
 		for (const pipe of pipes) {
 			const pipeLeftX = parseFloat(pipe.style.left)
 			const pipeWidth = parseFloat(window.getComputedStyle(pipe).getPropertyValue('width'))
@@ -489,4 +489,9 @@ for (const input of birdColorInput) {
 
 rangeInputs.forEach(rangeInput => {
 	updateRangeInput(rangeInput)
+})
+
+window.addEventListener('resize', () => {
+	gameWidth = game.offsetWidth
+	pipeStartX = gameWidth * 0.7
 })
