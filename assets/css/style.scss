@@ -112,9 +112,25 @@ h3 {
 	}
 	#gameOver {
 		position: absolute;
-		top: 180px;
-		left: 144px;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -70%);
 		display: none;
+		text-align: center;
+		font-family: 'Courier New', Courier, monospace;
+		h2 {
+			font-size: 30px;
+			margin-top: 20px;
+			text-shadow: -2px 0px 0 black, 2px 0px 0 black, 0px -2px 0 black, 0px 2px 0 black,
+				-2px 0px 3px #4dc1cb, 2px 0px 3px #4dc1cb, 0px -2px 3px #4dc1cb, 0px 2px 3px #4dc1cb,
+				-2px 0px 5px #4dc1cb, 2px 0px 5px #4dc1cb, 0px -2px 5px #4dc1cb, 0px 2px 5px #4dc1cb;
+			span {
+				display: block;
+				font-family: 'FlappyNumbers', 'Courier New', Courier, monospace;
+				font-size: 35px;
+				margin-top: 10px;
+			}
+		}
 	}
 	#pipes {
 		z-index: 80;

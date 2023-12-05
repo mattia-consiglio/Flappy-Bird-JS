@@ -118,9 +118,24 @@ h3 {
 }
 #game #gameOver {
   position: absolute;
-  top: 180px;
-  left: 144px;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -70%);
+          transform: translate(-50%, -70%);
   display: none;
+  text-align: center;
+  font-family: "Courier New", Courier, monospace;
+}
+#game #gameOver h2 {
+  font-size: 30px;
+  margin-top: 20px;
+  text-shadow: -2px 0px 0 black, 2px 0px 0 black, 0px -2px 0 black, 0px 2px 0 black, -2px 0px 3px #4dc1cb, 2px 0px 3px #4dc1cb, 0px -2px 3px #4dc1cb, 0px 2px 3px #4dc1cb, -2px 0px 5px #4dc1cb, 2px 0px 5px #4dc1cb, 0px -2px 5px #4dc1cb, 0px 2px 5px #4dc1cb;
+}
+#game #gameOver h2 span {
+  display: block;
+  font-family: "FlappyNumbers", "Courier New", Courier, monospace;
+  font-size: 35px;
+  margin-top: 10px;
 }
 #game #pipes {
   z-index: 80;

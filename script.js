@@ -37,6 +37,7 @@ let pipeMinGapY = 80
 let pipeMaxGapY = 100
 let pipeMinGapX = 200
 let pipeMaxGapX = 300
+let bestScore = 0
 
 let lastFrameTime = 0
 let baseGravity = 0.2
@@ -46,6 +47,7 @@ let settings = {
 	debugEnable,
 	baseGravity,
 	speedMultiplier,
+	bestScore,
 }
 
 const updateSettings = () => {
@@ -231,24 +233,26 @@ const updatePipes = () => {
 }
 
 const updateScore = () => {
-	const pipes = pipesContainer.getElementsByClassName('pipe')
-	if (pipes.length) {
-		let firstPipe = pipes[0]
+	if (isRunning) {
+		const pipes = pipesContainer.getElementsByClassName('pipe')
+		if (pipes.length) {
+			let firstPipe = pipes[0]
 
-		const firstPipeLeftX = parseFloat(firstPipe.style.left)
+			const firstPipeLeftX = parseFloat(firstPipe.style.left)
 
-		const gapX = firstPipeLeftX - birdLeftX - birdWidth
-		debug('birdGapX', gapX)
+			const gapX = firstPipeLeftX - birdLeftX - birdWidth
+			debug('birdGapX', gapX)
 
-		// 52px is th width of the pipe
-		// Prevent counting score multiple time if bird is out of pipe
-		// 60 frames === 1.5 second (40 frames per second)
-		if (gapX <= -52 && frames - lastFrameTime >= 60) {
-			score++
-			lastFrameTime = frames
-			debug('lastFrameTime', lastFrameTime)
+			// 52px is th width of the pipe
+			// Prevent counting score multiple time if bird is out of pipe
+			// 60 frames === 1.5 second (40 frames per second)
+			if (gapX <= -52 && frames - lastFrameTime >= 60) {
+				score++
+				lastFrameTime = frames
+				debug('lastFrameTime', lastFrameTime)
+			}
+			document.getElementById('score').textContent = score
 		}
-		document.getElementById('score').textContent = score
 	}
 }
 
@@ -322,6 +326,12 @@ const stopGame = async () => {
 	isRunning = false
 	debug('IsRunning', isRunning)
 	debug('endigSequence', endigSequence)
+	console.log(bestScore)
+
+	bestScore = score > bestScore ? score : bestScore
+	settings.bestScore = bestScore
+	console.log(bestScore)
+	updateSettings()
 
 	if (!endigSequence) {
 		endigSequence = true
@@ -331,6 +341,7 @@ const stopGame = async () => {
 		pipesContainer.style.display = 'none'
 		pipeIndex = 0
 		updatePipes()
+		document.getElementById('bestScore').innerText = bestScore
 		document.getElementById('gameOver').style.display = 'block'
 		endigSequence = false
 		debug('endigSequence', endigSequence)
@@ -462,6 +473,8 @@ if (localStorage.getItem('setting')) {
 	speedMultiplier = settings.speedMultiplier
 	inputChangeSpeed.value = speedMultiplier
 	changeBirdColor(settings.birdColor)
+
+	bestScore = settings.bestScore ? settings.bestScore : bestScore
 } else {
 	toggleDebug(debugEnable)
 	changeBirdColor(birdColor)
