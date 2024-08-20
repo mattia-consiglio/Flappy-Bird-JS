@@ -3,7 +3,6 @@ interface Pipe {
 	y: number
 	gapY: number
 	gapX: number
-	active: boolean
 	scored: boolean
 }
 interface Settings {
@@ -23,6 +22,17 @@ document.addEventListener('DOMContentLoaded', () => {
 	const inputChangeSpeed = document.getElementById('speedRange') as HTMLInputElement
 	const birdColorOptions = document.querySelectorAll<HTMLInputElement>('[name = "birdColor"]')
 	const birdImages: { [key: string]: HTMLImageElement } = {}
+	const debugElements = {
+		fps: document.getElementById('fps'),
+		deltaTimeMultiplier: document.getElementById('deltaTimeMultiplier'),
+		isRunning: document.getElementById('isRunning'),
+		isFalling: document.getElementById('isFalling'),
+		birdY: document.getElementById('birdY'),
+		birdRotation: document.getElementById('birdRotation'),
+		gravityIncrement: document.getElementById('gravityIncrement'),
+		birdIsCollided: document.getElementById('birdIsCollided'),
+		speedIncrement: document.getElementById('speedIncrement'),
+	}
 
 	// Game constants
 	const GAME_WIDTH = game.offsetWidth
@@ -36,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const FLAP_STRENGTH = -3.5
 	const PIPE_SPAWN_THRESHOLD = 150
-	const PIPE_SPEED = 2
+	const SPEED = 2
 	const BIRD_X_POSITION = 50
 	const BIRD_ROTATION_FACTOR = 0.1
 	const BIRD_MAX_ROTATION = Math.PI / 4
@@ -48,24 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
 	const BASE_HEIGHT = 112
 	const BASE_WIDTH = 336
 	const PIPE_MIN_Y = BASE_HEIGHT + 20
-	const TARGET_FPS = 30
-	let FPS_SPEED_FACTOR = null
-	getScreenRefreshRate(FPS => {
-		FPS_SPEED_FACTOR = TARGET_FPS / FPS
-		// console.log(FPS_SPEED_FACTOR)
-		if (settings.debugEnable) {
-			document.getElementById('fps').innerText = `${FPS} FPS`
-
-			document.getElementById('FPS_SPEED_FACTOR').innerText = `${(FPS_SPEED_FACTOR * 100).toFixed(
-				2
-			)}%`
-		}
-	})
+	const TARGET_FPS = 60
+	const FRAME_INTERVAL = 1000 / TARGET_FPS
 
 	// Game state
 
+	let animationId = null
 	let isRunning = false
-	let birdY = 200
+	let birdY = (GAME_HEIGHT - BASE_HEIGHT - BIRD_HEIGHT / 2) / 2
 	let birdVelocity = 0
 	let score = 0
 	let pipes: Pipe[] = []
@@ -73,6 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	let isFalling = false
 	let birdRotation = 0
 	let gameOverTime = 0
+	let gravityIncrement = 0
+	let speedIncrement = 0
+
+	let deltaTimeMultiplier = 1
+	let previousTime = performance.now()
+
 	const settings: Settings = localStorage.getItem('settings')
 		? JSON.parse(localStorage.getItem('settings'))
 		: {
@@ -100,8 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
 	const backgroundImage = new Image()
 	backgroundImage.src = 'assets/sprites/background-day.png'
 
-	// Pipe object pool
-	const POOL_SIZE = 10
+	const debug = (text: string, target: keyof typeof debugElements) => {
+		if (!settings.debugEnable) return
+		debugElements[target].innerText = text
+	}
 
 	const getCircleLineIntersectionPoints = (
 		circleX: number,
@@ -129,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		// Calculate the minimum gap required for the bird to pass through based on effective flap strength and speed
 		const minGapRequired = Math.ceil(
-			BIRD_HEIGHT + effectiveFlapStrength * settings.speedMultiplier * FPS_SPEED_FACTOR
+			BIRD_HEIGHT + effectiveFlapStrength * settings.speedMultiplier * deltaTimeMultiplier
 		)
 
 		// Ensure the minimum gap is not smaller than the predefined PIPE_MIN_GAP
@@ -155,10 +163,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		let pipeY: number
 		if (pipes.length > 0) {
 			const lastPipe = pipes[pipes.length - 1]
-			const radius = (lastPipe.gapX + PIPE_WIDTH) * 1.2
+			const radius = lastPipe.gapX + PIPE_WIDTH + PIPE_WIDTH
 			let [minY, maxY] = getCircleLineIntersectionPoints(
-				lastPipe.x + lastPipe.gapX + PIPE_WIDTH,
-				lastPipe.y + lastPipe.gapY / 2,
+				lastPipe.x + PIPE_WIDTH,
+				lastPipe.y,
 				radius,
 				lastPipe.x + lastPipe.gapX + PIPE_WIDTH
 			)
@@ -175,17 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
 			y: pipeY,
 			gapY: pipeGapY,
 			gapX: PIPE_SPAWN_THRESHOLD,
-			active: false,
 			scored: false,
 		}
 		newPipe.x = GAME_WIDTH
-		newPipe.active = true
 		return newPipe
-	}
-	const initPipes = () => {
-		for (let i = 0; i < POOL_SIZE; i++) {
-			pipes.push(generatePipe())
-		}
 	}
 
 	const updatePipes = () => {
@@ -195,9 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 
 		pipes = pipes.filter(pipe => {
-			pipe.x -= PIPE_SPEED * settings.speedMultiplier * FPS_SPEED_FACTOR
+			pipe.x -= (SPEED + speedIncrement) * settings.speedMultiplier * deltaTimeMultiplier
 			if (pipe.x + PIPE_WIDTH < 0) {
-				pipe.active = false
 				return false
 			}
 			return true
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			bottom: GAME_HEIGHT,
 		}
 
-		return (
+		const isCollided =
 			(birdBox.right >= topPipeBox.left &&
 				birdBox.left <= topPipeBox.right &&
 				birdBox.top <= topPipeBox.bottom) ||
@@ -235,7 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
 				birdBox.left <= bottomPipeBox.right &&
 				birdBox.bottom >= bottomPipeBox.top) ||
 			birdY + BIRD_HEIGHT >= GAME_HEIGHT - BASE_HEIGHT
-		)
+		debug(`${isCollided}`, 'birdIsCollided')
+		return isCollided
 	}
 
 	const updateScore = () => {
@@ -244,8 +245,12 @@ document.addEventListener('DOMContentLoaded', () => {
 				score++
 				pipe.scored = true
 				scoreElement.textContent = score.toString()
+				gravityIncrement += 0.01
+				speedIncrement += 0.02
 			}
 		})
+		debug(`${gravityIncrement}`, 'gravityIncrement')
+		debug(`${speedIncrement}`, 'speedIncrement')
 	}
 
 	const setBirdRotation = () => {
@@ -273,16 +278,21 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Draw background
 
 		if (isRunning) {
-			backgroundX -= PIPE_SPEED * settings.speedMultiplier * FPS_SPEED_FACTOR * BACKGROUND_SPEED
+			backgroundX -=
+				(SPEED + speedIncrement) * settings.speedMultiplier * deltaTimeMultiplier * BACKGROUND_SPEED
 			if (backgroundX <= -BACKGROUND_WIDTH) {
 				backgroundX = 0
 			}
+		} else {
+			backgroundX = 0
 		}
 		let currentBackgroundX = backgroundX
+		ctx.save()
 		while (currentBackgroundX < GAME_WIDTH) {
 			ctx.drawImage(backgroundImage, currentBackgroundX, 0)
 			currentBackgroundX += BACKGROUND_WIDTH - 1
 		}
+		ctx.restore()
 
 		// Draw bird
 		ctx.save()
@@ -302,13 +312,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			// Draw bottom pipe
 			ctx.drawImage(pipeImage, pipe.x, pipe.y + pipe.gapY)
+			debug(`${isRunning}`, 'isRunning')
+			debug(`${birdY}`, 'birdY')
+			debug(`${birdRotation}`, 'birdRotation')
 		})
 
 		// Draw base
-		// pipe.x -= PIPE_SPEED * settings.speedMultiplier
-
 		if (isRunning) {
-			baseX -= PIPE_SPEED * settings.speedMultiplier * FPS_SPEED_FACTOR
+			baseX -= (SPEED + speedIncrement) * settings.speedMultiplier * deltaTimeMultiplier
 			if (baseX <= -BASE_WIDTH) {
 				baseX = 0
 			}
@@ -329,6 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const animateFallingBird = () => {
 		if (!ctx) return
+		debug(`${isFalling}`, 'isFalling')
 		if (isFalling) {
 			birdVelocity += settings.baseGravity
 			birdY += birdVelocity
@@ -376,9 +388,12 @@ document.addEventListener('DOMContentLoaded', () => {
 			updateBestScore()
 			drawGameOver()
 		}
+		debug(`${isFalling}`, 'isFalling')
 	}
 
 	const drawGameOver = () => {
+		debug(`${isRunning}`, 'isRunning')
+		debug(`${isFalling}`, 'isFalling')
 		if (!ctx) return
 		ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
 		ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT)
@@ -394,13 +409,26 @@ document.addEventListener('DOMContentLoaded', () => {
 		ctx.font = '20px Arial'
 		ctx.textAlign = 'center'
 		ctx.fillText(`Your Best Score: ${bestScore}`, GAME_WIDTH / 2, gameOverY + gameOverHeight + 30)
+
+		cancelAnimationFrame(animationId)
+		animationId = null
 	}
 
-	const gameLoop = () => {
-		if (!isRunning) return
+	const gameLoop = (now: number) => {
+		if (!isRunning) {
+			return
+		}
+
+		const deltaTime = now - previousTime
+		deltaTimeMultiplier = deltaTime / FRAME_INTERVAL
+		previousTime = now
+
+		debug(`${Math.round(1000 / deltaTime)}`, 'fps')
+		debug(`${deltaTimeMultiplier}`, 'deltaTimeMultiplier')
 
 		birdVelocity += settings.baseGravity
 		birdY += birdVelocity
+		birdY += gravityIncrement
 
 		// Limit the bird's y position
 		if (birdY < 0) {
@@ -431,26 +459,35 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 		} else {
 			drawGame()
-			requestAnimationFrame(gameLoop)
+			animationId = requestAnimationFrame(gameLoop)
 		}
 	}
 
 	const startGame = () => {
 		isRunning = true
-		birdY = 200
+		birdY = (GAME_HEIGHT - BASE_HEIGHT - BIRD_HEIGHT / 2) / 2
 		birdVelocity = 0
 		score = 0
 		pipes = []
 		if (scoreElement) {
 			scoreElement.textContent = '0'
 		}
-		gameLoop()
+		previousTime = performance.now()
+		gravityIncrement = 0
+		speedIncrement = 0
+		requestAnimationFrame(gameLoop)
+		debug(`${isRunning}`, 'isRunning')
+		debug(`${isFalling}`, 'isFalling')
+		debug(`${birdY}`, 'birdY')
+		debug(`${birdRotation}`, 'birdRotation')
+		debug(`${gravityIncrement}`, 'gravityIncrement')
+		debug(`${speedIncrement}`, 'speedIncrement')
 	}
 
 	const flapBird = () => {
 		if (isRunning) {
 			birdVelocity = FLAP_STRENGTH
-		} else if (Date.now() - gameOverTime >= 2000) {
+		} else if (Date.now() - gameOverTime >= 1500) {
 			startGame()
 		}
 	}
@@ -470,7 +507,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		input.style.setProperty('--value', perc + '%')
 	}
 
-	const toggleDebug = (enable: boolean) => {
+	const toggleDebug = (enable: boolean, init = false) => {
+		if (enable === settings.debugEnable && !init) return
 		settings.debugEnable = enable
 		updateSettings()
 		const debugInfo = document.getElementById('debugInfo')
@@ -480,7 +518,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		} else {
 			debugInfo.style.display = 'block'
 		}
-		settings.debugEnable = enable
+		if (init && inputEnableDebug) {
+			inputEnableDebug.checked = enable
+		}
 	}
 
 	const changeBirdColor = (color: string, init = false) => {
@@ -521,6 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (init) {
 				birdImage = birdImages[`assets/sprites/${color}bird-midflap.png`]
 			}
+			drawGame()
 		}
 	}
 
@@ -561,21 +602,19 @@ document.addEventListener('DOMContentLoaded', () => {
 		updateRangeInput(target)
 	})
 
-	// Initial setup
-	birdImage.onload =
-		pipeImage.onload =
-		baseImage.onload =
-			() => {
-				drawGame()
-			}
-
-	initPipes()
-
 	// Load settings
 	inputChangeGravity.value = settings.baseGravity.toString()
 	inputChangeSpeed.value = settings.speedMultiplier.toString()
 	updateRangeInput(inputChangeGravity)
 	updateRangeInput(inputChangeSpeed)
 	changeBirdColor(settings.birdColor, true)
-	toggleDebug(settings.debugEnable)
+	toggleDebug(settings.debugEnable, true)
+
+	backgroundImage.onload =
+		birdImage.onload =
+		pipeImage.onload =
+		baseImage.onload =
+			() => {
+				drawGame()
+			}
 })
