@@ -25,6 +25,7 @@
   src: url("../fonts/Flappy-Bird.ttf") format("truetype");
 }
 body {
+  position: relative;
   background-color: #292929;
   color: #ececec;
   font-family: "Courier New", Courier, monospace;
@@ -79,6 +80,59 @@ h3 {
 #instructions p:first-of-type {
   font-size: 1.3rem;
   margin-bottom: 15px;
+}
+
+.github-container {
+  position: relative;
+}
+.github-container:hover svg {
+  -webkit-transform: scale(1.1);
+          transform: scale(1.1);
+}
+.github-container a {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: end;
+      -ms-flex-align: end;
+          align-items: flex-end;
+  width: 100%;
+  height: 100%;
+  background-color: #ececec;
+  color: #292929;
+  margin-bottom: 0.8rem;
+}
+.github-container a svg {
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s;
+  width: 30px;
+  height: 30px;
+}
+@media screen and (min-width: 640px) {
+  .github-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+    font-weight: bold;
+    -webkit-transform: rotate(45deg) translate(calc(25% - 13px), -75px);
+            transform: rotate(45deg) translate(calc(25% - 13px), -75px);
+    -webkit-transition: -webkit-transform 0.3s;
+    transition: -webkit-transform 0.3s;
+    transition: transform 0.3s;
+    transition: transform 0.3s, -webkit-transform 0.3s;
+    width: 200px;
+    height: 100px;
+  }
+  .github-container:hover {
+    -webkit-transform: rotate(45deg) translate(calc(25% - 13px), -62px);
+            transform: rotate(45deg) translate(calc(25% - 13px), -62px);
+  }
 }
 
 #game {
