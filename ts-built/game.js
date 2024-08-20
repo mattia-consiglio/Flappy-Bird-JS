@@ -25,9 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const BIRD_WIDTH = 34;
     const BIRD_HEIGHT = 24;
     const PIPE_WIDTH = 52;
-    const PIPE_MIN_GAP = 65;
-    const PIPE_DEFAULT_MAX_GAP = 150;
-    let pipeMaxGap = PIPE_DEFAULT_MAX_GAP;
+    const PIPE_MIN_GAP_Y = 65;
+    const PIPE_MAX_GAP_Y = 150;
+    const PIPE_MIN_GAP_X = 100;
+    const PIPE_MAX_GAP_X = 200;
     const FLAP_STRENGTH = -3.5;
     const PIPE_SPAWN_THRESHOLD = 150;
     const SPEED = 2;
@@ -105,39 +106,39 @@ document.addEventListener('DOMContentLoaded', () => {
         // Calculate the minimum gap required for the bird to pass through based on effective flap strength and speed
         const minGapRequired = Math.ceil(BIRD_HEIGHT + effectiveFlapStrength * settings.speedMultiplier * deltaTimeMultiplier);
         // Ensure the minimum gap is not smaller than the predefined PIPE_MIN_GAP
-        const adjustedMinGap = Math.max(minGapRequired, PIPE_MIN_GAP);
-        // Generate a random pipe gap within the adjusted range
-        const pipeGap = Math.floor(Math.random() * (pipeMaxGap - adjustedMinGap + 1)) + adjustedMinGap;
+        const adjustedMinGap = Math.max(minGapRequired, PIPE_MIN_GAP_Y);
+        // Generate a random pipe gap Y within the adjusted range
+        const pipeGapY = Math.floor(Math.random() * (PIPE_MAX_GAP_Y - adjustedMinGap + 1)) + adjustedMinGap;
         // Calculate the maximum and minimum pipe positions based on the game height and gap
         const pipeMaxY = maxY
-            ? Math.min(maxY, GAME_HEIGHT - pipeGap - 120)
-            : GAME_HEIGHT - pipeGap - 120;
+            ? Math.min(maxY, GAME_HEIGHT - pipeGapY - 120)
+            : GAME_HEIGHT - pipeGapY - 120;
         const pipeMinY = minY ? Math.max(minY, PIPE_MIN_Y) : PIPE_MIN_Y;
         // Generate a random pipe position within the calculated range
         const pipeY = Math.random() * (pipeMaxY - pipeMinY) + pipeMinY;
-        return [pipeGap, pipeY];
+        // Generate a random pipe gap X
+        const pipeGapX = Math.floor(Math.random() * (PIPE_MAX_GAP_X - PIPE_MIN_GAP_X + 1)) + PIPE_MIN_GAP_X;
+        return [pipeGapY, pipeY, pipeGapX];
     };
     const generatePipe = () => {
         let pipeGapY;
         let pipeY;
+        let pipeGapX;
         if (pipes.length > 0) {
             const lastPipe = pipes[pipes.length - 1];
             const radius = lastPipe.gapX + PIPE_WIDTH + PIPE_WIDTH;
             let [minY, maxY] = getCircleLineIntersectionPoints(lastPipe.x + PIPE_WIDTH, lastPipe.y, radius, lastPipe.x + lastPipe.gapX + PIPE_WIDTH);
-            const values = generateRandomPipeValues(maxY, minY);
-            pipeGapY = values[0];
-            pipeY = values[1];
+            [pipeGapY, pipeY, pipeGapX] = generateRandomPipeValues(maxY, minY);
         }
         else {
-            const values = generateRandomPipeValues();
-            pipeGapY = values[0];
-            pipeY = values[1];
+            ;
+            [pipeGapY, pipeY, pipeGapX] = generateRandomPipeValues();
         }
         const newPipe = {
             x: GAME_WIDTH,
             y: pipeY,
             gapY: pipeGapY,
-            gapX: PIPE_SPAWN_THRESHOLD,
+            gapX: pipeGapX,
             scored: false,
         };
         newPipe.x = GAME_WIDTH;

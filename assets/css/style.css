@@ -73,6 +73,9 @@ h3 {
       flex-wrap: wrap;
 }
 
+#instructions {
+  margin-top: 1rem;
+}
 #instructions p:first-of-type {
   font-size: 1.3rem;
   margin-bottom: 15px;
