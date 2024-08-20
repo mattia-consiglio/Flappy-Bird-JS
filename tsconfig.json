@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"sourceMap": true,
+		"module": "commonjs",
+		"target": "ES2016",
+		"outDir": "ts-built",
+		"rootDir": "."
+	}
+}

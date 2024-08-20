@@ -75,11 +75,16 @@ h3 {
 	width: 512px;
 	max-width: 100vw;
 	height: 512px;
-	background-image: url('../sprites/background-day.png');
-	background-repeat: repeat-x;
-	margin: 20px auto;
 	position: relative;
 	overflow: hidden;
+	margin: 0 auto;
+
+	canvas {
+		position: absolute;
+		top: 0;
+		left: 0;
+	}
+
 	#bird {
 		position: absolute;
 		top: 80px;
@@ -109,39 +114,6 @@ h3 {
 		text-shadow: -2px 0px 0 black, 2px 0px 0 black, 0px -2px 0 black, 0px 2px 0 black,
 			-2px 0px 3px #4dc1cb, 2px 0px 3px #4dc1cb, 0px -2px 3px #4dc1cb, 0px 2px 3px #4dc1cb,
 			-2px 0px 5px #4dc1cb, 2px 0px 5px #4dc1cb, 0px -2px 5px #4dc1cb, 0px 2px 5px #4dc1cb;
-	}
-	#gameOver {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -70%);
-		display: none;
-		text-align: center;
-		font-family: 'Courier New', Courier, monospace;
-		h2 {
-			font-size: 30px;
-			margin-top: 20px;
-			text-shadow: -2px 0px 0 black, 2px 0px 0 black, 0px -2px 0 black, 0px 2px 0 black,
-				-2px 0px 3px #4dc1cb, 2px 0px 3px #4dc1cb, 0px -2px 3px #4dc1cb, 0px 2px 3px #4dc1cb,
-				-2px 0px 5px #4dc1cb, 2px 0px 5px #4dc1cb, 0px -2px 5px #4dc1cb, 0px 2px 5px #4dc1cb;
-			span {
-				display: block;
-				font-family: 'FlappyNumbers', 'Courier New', Courier, monospace;
-				font-size: 35px;
-				margin-top: 10px;
-			}
-		}
-	}
-	#pipes {
-		z-index: 80;
-		.pipe {
-			position: absolute;
-			z-index: 80;
-			// background-color: red;
-			&.pipeTop {
-				transform: rotateX(180deg);
-			}
-		}
 	}
 }
 #debugInfo {
@@ -221,7 +193,8 @@ input[type='range'] {
 
 	&::before {
 		content: '';
-		width: calc(var(--value) - 6px);
+		width: calc(var(--value));
+		max-width: calc(100% - 6px);
 		height: 4px;
 		background-color: #c1c1c1;
 		position: absolute;
@@ -319,7 +292,7 @@ $colors: (
 			input {
 				display: none;
 			}
-			input:checked + label {
+			label:has(input:checked) {
 				&,
 				&:focus {
 					background-color: $color;

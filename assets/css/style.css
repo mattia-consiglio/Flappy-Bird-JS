@@ -82,11 +82,14 @@ h3 {
   width: 512px;
   max-width: 100vw;
   height: 512px;
-  background-image: url("../sprites/background-day.png");
-  background-repeat: repeat-x;
-  margin: 20px auto;
   position: relative;
   overflow: hidden;
+  margin: 0 auto;
+}
+#game canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 #game #bird {
   position: absolute;
@@ -115,38 +118,6 @@ h3 {
   width: -moz-fit-content;
   width: fit-content;
   text-shadow: -2px 0px 0 black, 2px 0px 0 black, 0px -2px 0 black, 0px 2px 0 black, -2px 0px 3px #4dc1cb, 2px 0px 3px #4dc1cb, 0px -2px 3px #4dc1cb, 0px 2px 3px #4dc1cb, -2px 0px 5px #4dc1cb, 2px 0px 5px #4dc1cb, 0px -2px 5px #4dc1cb, 0px 2px 5px #4dc1cb;
-}
-#game #gameOver {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  -webkit-transform: translate(-50%, -70%);
-          transform: translate(-50%, -70%);
-  display: none;
-  text-align: center;
-  font-family: "Courier New", Courier, monospace;
-}
-#game #gameOver h2 {
-  font-size: 30px;
-  margin-top: 20px;
-  text-shadow: -2px 0px 0 black, 2px 0px 0 black, 0px -2px 0 black, 0px 2px 0 black, -2px 0px 3px #4dc1cb, 2px 0px 3px #4dc1cb, 0px -2px 3px #4dc1cb, 0px 2px 3px #4dc1cb, -2px 0px 5px #4dc1cb, 2px 0px 5px #4dc1cb, 0px -2px 5px #4dc1cb, 0px 2px 5px #4dc1cb;
-}
-#game #gameOver h2 span {
-  display: block;
-  font-family: "FlappyNumbers", "Courier New", Courier, monospace;
-  font-size: 35px;
-  margin-top: 10px;
-}
-#game #pipes {
-  z-index: 80;
-}
-#game #pipes .pipe {
-  position: absolute;
-  z-index: 80;
-}
-#game #pipes .pipe.pipeTop {
-  -webkit-transform: rotateX(180deg);
-          transform: rotateX(180deg);
 }
 
 #debugInfo {
@@ -228,7 +199,8 @@ input[type=range]::-moz-range-track {
 }
 input[type=range]::before {
   content: "";
-  width: calc(var(--value) - 6px);
+  width: calc(var(--value));
+  max-width: calc(100% - 6px);
   height: 4px;
   background-color: #c1c1c1;
   position: absolute;
@@ -319,10 +291,10 @@ input[type=checkbox]:checked + label:hover::before, input[type=checkbox]:checked
 .yellow #birdColor input {
   display: none;
 }
-.yellow #birdColor input:checked + label, .yellow #birdColor input:checked + label:focus {
+.yellow #birdColor label:has(input:checked), .yellow #birdColor label:has(input:checked):focus {
   background-color: #f8b830;
 }
-.yellow #birdColor input:checked + label:hover, .yellow #birdColor input:checked + label:focus-visible {
+.yellow #birdColor label:has(input:checked):hover, .yellow #birdColor label:has(input:checked):focus-visible {
   background-color: #ae8530;
   outline: none;
 }
@@ -356,10 +328,10 @@ input[type=checkbox]:checked + label:hover::before, input[type=checkbox]:checked
 .red #birdColor input {
   display: none;
 }
-.red #birdColor input:checked + label, .red #birdColor input:checked + label:focus {
+.red #birdColor label:has(input:checked), .red #birdColor label:has(input:checked):focus {
   background-color: #fc3500;
 }
-.red #birdColor input:checked + label:hover, .red #birdColor input:checked + label:focus-visible {
+.red #birdColor label:has(input:checked):hover, .red #birdColor label:has(input:checked):focus-visible {
   background-color: #b02500;
   outline: none;
 }
@@ -393,10 +365,10 @@ input[type=checkbox]:checked + label:hover::before, input[type=checkbox]:checked
 .blue #birdColor input {
   display: none;
 }
-.blue #birdColor input:checked + label, .blue #birdColor input:checked + label:focus {
+.blue #birdColor label:has(input:checked), .blue #birdColor label:has(input:checked):focus {
   background-color: #4ac2f8;
 }
-.blue #birdColor input:checked + label:hover, .blue #birdColor input:checked + label:focus-visible {
+.blue #birdColor label:has(input:checked):hover, .blue #birdColor label:has(input:checked):focus-visible {
   background-color: #4a8fae;
   outline: none;
 }/*# sourceMappingURL=style.css.map */
