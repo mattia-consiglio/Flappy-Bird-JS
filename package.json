@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "build": "tsc && if not exist dist mkdir dist && terser ./ts-built/*.js --compress --mangle --output ./dist/bundle.min.js"
+  },
+  "devDependencies": {
+    "terser": "^5.31.6"
+  }
+}
